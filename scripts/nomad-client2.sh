@@ -10,7 +10,7 @@ sudo sed -i 's+#server = true+server = false+' /etc/consul.d/consul.hcl
 sudo  sed -i '$ a bind_addr = "192.168.1.3"' /etc/consul.d/consul.hcl
 sudo  sed -i '$ a retry_join = ["192.168.1.1"]' /etc/consul.d/consul.hcl
 
-sudo chmod -R 777 /opt/consul/ 
+sudo chmod -R 755 /opt/consul/ 
 
 sudo systemctl  enable consul
 sudo systemctl  start consul

@@ -11,7 +11,7 @@ sudo sed -i '$ a export NOMAD_ADDR=http://192.168.1.1:4646' .bashrc
 
 #retry_join = ["[::1]:8301"]  
 
-sudo chmod -R 777 /opt/consul/ 
+sudo chmod -R 755/opt/consul/ 
 
 sudo systemctl enable consul
 sudo systemctl  start consul
