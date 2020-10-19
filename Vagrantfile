@@ -10,7 +10,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	config.vm.define "Nomad-Client-#{i}" do |client| 
 #	client.vm.hostname = "Nomad-Client-#{i}"
 #	client.vm.network "private_network", ip:"192.168.1.#{i+1}", virtualbox__intnet:"mynetwork"
-#	client.vm.provision "shell", path: "scripts/nomad-client.sh"
+#	client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
 #	end
 #  end
 
