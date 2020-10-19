@@ -5,10 +5,10 @@ sudo yum -y install consul
 	#consul agent -server -bootstrap-expect=1 -node=agent-one -bind=192.168.1.1  -config-dir=/etc/consul.d
 	# --> Systemd  
 sudo sed -i 's+#server = true+server = true+' /etc/consul.d/consul.hcl 
-sudo sed -i 's+client_addr = "0.0.0.0"+bind_addr = "192.168.1.1"+' /etc/consul.d/consul.hcl 
+sudo  sed -i '$ a bind_addr = "192.168.1.1"' /etc/consul.d/consul.hcl
 sudo sed -i 's+#bootstrap_expect=3+bootstrap_expect=1+' /etc/consul.d/consul.hcl 
-sudo  sed -i '$ a retry_join = ["192.162.1.2"]' /etc/consul.d/consul.hcl
-sudo  sed -i '$ a retry_join = ["192.162.1.3"]' /etc/consul.d/consul.hcl
+sudo sed -i '$ a export NOMAD_ADDR=http://192.168.1.1:4646' .bashrc
+
 #retry_join = ["[::1]:8301"]  
 
 sudo chmod -R 777 /opt/consul/ 
@@ -27,7 +27,7 @@ cat << EOF > /etc/nomad.d/nomad.hcl
 		log_level = "DEBUG"
 
 		data_dir = "/opt/nomad/data"
-		bind_addr = "0.0.0.0"
+		bind_addr = "192.168.1.1"
 				
 	# Enable the server
 		server {
