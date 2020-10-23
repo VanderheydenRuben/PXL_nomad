@@ -2,15 +2,12 @@
 	
 		
 sudo yum -y install consul
-	
-	# consul agent -node=agent-two -bind=192.168.1.2 -enable-script-checks=true -data-dir=/tmp/consul -config-dir=/etc/consul.d
 
   
 sudo sed -i 's+#server = true+server = false+' /etc/consul.d/consul.hcl 
 sudo  sed -i '$ a bind_addr = "192.168.1.2"' /etc/consul.d/consul.hcl
 sudo  sed -i '$ a retry_join = ["192.168.1.1"]' /etc/consul.d/consul.hcl
 
-sudo chmod -R 755 /opt/consul/ 
 
 sudo systemctl  enable consul
 sudo systemctl  start consul
@@ -48,7 +45,7 @@ cat << EOF > /etc/nomad.d/nomad.hcl
 EOF
 
 mkdir /opt/nomad/client1
-	# sudo nomad agent server.hcl --> Systemd
+
 systemctl  enable nomad
 systemctl  start nomad
 
