@@ -166,3 +166,9 @@ script server:
 	systemctl  enable nomad
 	systemctl  start nomad
 ```
+
+Bronvermelding
+https://www.consul.io/docs
+https://www.nomadproject.io/docs
+https://www.vagrantup.com/docs/vagrantfile
+https://www.vagrantup.com/docs/vagrantfile/tips
