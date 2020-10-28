@@ -167,6 +167,15 @@ script server:
 	systemctl  start nomad
 ```
 
+De Consul gui kan geopend worden in de browser te surfen naar localhost:8500 na het uitvoeren van volgend commando om de juiste port te forwarden:
+```bash
+vagrant ssh -- -L 8500:192.168.1.1:8500
+```
+Analoog voor de Nomad gui:
+```bash
+vagrant ssh -- -L 8500:192.168.1.1:4646
+```
+
 Bronvermelding
 https://www.consul.io/docs
 https://www.nomadproject.io/docs
