@@ -1,12 +1,12 @@
 ---
 - name: Add RHEL repository
-  shell: yum-config-manager --add-repo=https://rpm.releases.hashicorp.com/RHEL/hashicorp.repo
-  args:
-    creates: /etc/yum.repos.d/hashicorp.repo
-  become: true
+  yum_repository:
+    name: hashicorp
+    description: hashicorp repository
+    baseurl: https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable
+    gpgkey: https://rpm.releases.hashicorp.com/gpg
 
 - name: Install Nomad
   package:
     name: nomad
     state: latest
-  become: true

@@ -24,7 +24,6 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	client.vm.provision "shell", path: "scripts/nomad-client2.sh"
 #  end
   
-  
   config.vm.define :server do |server| 
 	server.vm.hostname = "Nomad-Server"
 	server.vm.network "private_network", ip:"192.168.1.1", virtualbox__intnet:"mynetwork"
