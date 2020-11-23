@@ -23,7 +23,26 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	client.vm.network "private_network", ip:"192.168.1.3", virtualbox__intnet:"mynetwork"
 #	client.vm.provision "shell", path: "scripts/nomad-client2.sh"
 #  end
-  
+
+  config.vm.define :client do |client| 
+	client.vm.hostname = "Nomad-client"
+	client.vm.network "private_network", ip:"192.168.1.2", virtualbox__intnet:"mynetwork"
+	#client.vm.provision "shell", path: "scripts/nomad-Server.sh"
+	
+	client.vm.provision "ansible_local" do |ansible|
+      ansible.config_file = "ansible/ansible.cfg"
+      ansible.playbook = "ansible/plays/client.yml"
+      ansible.groups = {
+        "clients" => ["client"],
+#        "clients:vars" => {"crond__content" => "client_value"}
+      }
+      ansible.host_vars = {
+#        "client" => {"crond__content" => "client_value"}
+      }
+#      ansible.verbose = '-vvv'
+    end
+  end
+
   config.vm.define :server do |server| 
 	server.vm.hostname = "Nomad-Server"
 	server.vm.network "private_network", ip:"192.168.1.1", virtualbox__intnet:"mynetwork"
