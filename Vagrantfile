@@ -2,16 +2,15 @@
 # vi: set ft=ruby :
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
-  config.vbguest.auto_update = false
   config.vm.box = "centos/7"
   
-	(1..2).each do |i|
-	config.vm.define "Nomad-Client-#{i}" do |client| 
-	client.vm.hostname = "Nomad-Client-#{i}"
-	client.vm.network "private_network", ip:"192.168.1.#{i+1}", virtualbox__intnet:"mynetwork"
-	#client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
-	end
-  end
+#	(1..2).each do |i|
+#	config.vm.define "Nomad-Client-#{i}" do |client| 
+#	client.vm.hostname = "Nomad-Client-#{i}"
+#	client.vm.network "private_network", ip:"192.168.1.#{i+1}", virtualbox__intnet:"mynetwork"
+#	#client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
+#	end
+#  end
 
 #  config.vm.define "Nomad-Client-1" do |client| 
 #	client.vm.hostname = "Nomad-Client-1"
@@ -26,12 +25,12 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #  end
   
   
-  config.vm.define :server "Nomad-Server" do |server| 
+  config.vm.define :server do |server| 
 	server.vm.hostname = "Nomad-Server"
 	server.vm.network "private_network", ip:"192.168.1.1", virtualbox__intnet:"mynetwork"
 	#server.vm.provision "shell", path: "scripts/nomad-Server.sh"
 	
-	server.vm.provision "ansible" do |ansible|
+	server.vm.provision "ansible_local" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
       ansible.playbook = "ansible/plays/server.yml"
       ansible.groups = {
