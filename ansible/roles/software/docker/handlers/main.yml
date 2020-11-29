@@ -1,5 +1,5 @@
 ---
-- name: restart crond
+- name: restart docker
   service:
-    name: crond
+    name: docker
     state: restarted

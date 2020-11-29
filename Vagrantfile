@@ -3,7 +3,7 @@
 VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.box = "centos/7"
-  
+
 #	(1..2).each do |i|
 #	config.vm.define "Nomad-Client-#{i}" do |client| 
 #	client.vm.hostname = "Nomad-Client-#{i}"
@@ -11,29 +11,16 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	#client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
 #	end
 #  end
-
-#  config.vm.define "Nomad-Client-1" do |client| 
-#	client.vm.hostname = "Nomad-Client-1"
-#	client.vm.network "private_network", ip:"192.168.1.2", virtualbox__intnet:"mynetwork"
-#	client.vm.provision "shell", path: "scripts/nomad-client1.sh"
-#  end
-  
-#  config.vm.define "Nomad-Client-2" do |client| 
-#	client.vm.hostname = "Nomad-Client-2"
-#	client.vm.network "private_network", ip:"192.168.1.3", virtualbox__intnet:"mynetwork"
-#	client.vm.provision "shell", path: "scripts/nomad-client2.sh"
-#  end
-
-  config.vm.define :client do |client| 
-	client.vm.hostname = "Nomad-client"
-	client.vm.network "private_network", ip:"192.168.1.2", virtualbox__intnet:"mynetwork"
-	#client.vm.provision "shell", path: "scripts/nomad-Server.sh"
+	(1..2).each do |i|
+	config.vm.define "Nomad-Client-#{i}"  do |client| 
+	client.vm.hostname = "Nomad-Client-#{i}"
+	client.vm.network "private_network", ip:"192.168.1.#{i+1}", virtualbox__intnet:"mynetwork"
 	
 	client.vm.provision "ansible_local" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
       ansible.playbook = "ansible/plays/client.yml"
       ansible.groups = {
-        "clients" => ["client"],
+        "clients" => ["Nomad-Client-#{i}"],
 #        "clients:vars" => {"crond__content" => "client_value"}
       }
       ansible.host_vars = {
@@ -41,12 +28,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       }
 #      ansible.verbose = '-vvv'
     end
+	client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
   end
+end
 
   config.vm.define :server do |server| 
 	server.vm.hostname = "Nomad-Server"
 	server.vm.network "private_network", ip:"192.168.1.1", virtualbox__intnet:"mynetwork"
-	#server.vm.provision "shell", path: "scripts/nomad-Server.sh"
+	
 	
 	server.vm.provision "ansible_local" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
@@ -60,6 +49,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
       }
 #      ansible.verbose = '-vvv'
     end
+	server.vm.provision "shell", path: "scripts/nomad-Server.sh"
   end
 
 
