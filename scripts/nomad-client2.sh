@@ -1,7 +1,5 @@
 #!/bin/sh
-	
-sudo yum -y install consul
-	
+
 sudo sed -i 's+#server = true+server = false+' /etc/consul.d/consul.hcl 
 sudo  sed -i '$ a bind_addr = "192.168.1.3"' /etc/consul.d/consul.hcl
 sudo  sed -i '$ a retry_join = ["192.168.1.1"]' /etc/consul.d/consul.hcl
@@ -10,9 +8,7 @@ sudo  sed -i '$ a retry_join = ["192.168.1.1"]' /etc/consul.d/consul.hcl
 
 sudo systemctl  enable consul
 sudo systemctl  start consul
-  
-sudo yum -y install nomad
-			
+
 cat << EOF > /etc/nomad.d/nomad.hcl
 				# Increase log verbosity
 				log_level = "DEBUG"

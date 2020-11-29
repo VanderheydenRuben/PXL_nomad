@@ -1,7 +1,5 @@
 #!/bin/sh
 
-sudo yum -y install consul
-
 sudo sed -i 's+#server = true+server = true+' /etc/consul.d/consul.hcl 
 sudo  sed -i '$ a bind_addr = "192.168.1.1"' /etc/consul.d/consul.hcl
 sudo sed -i 's+#bootstrap_expect=3+bootstrap_expect=1+' /etc/consul.d/consul.hcl 
@@ -11,10 +9,6 @@ sudo sed -i '$ a export NOMAD_ADDR=http://192.168.1.1:4646' .bashrc
 
 sudo systemctl enable consul
 sudo systemctl  start consul
-	
-	
-sudo yum -y install nomad
-
 	
 cat << EOF > /etc/nomad.d/nomad.hcl
 	# Increase log verbosity
