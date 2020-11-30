@@ -10,3 +10,20 @@
   package:
     name: nomad
     state: latest
+    
+- name: Create Nomad directory
+  file:
+    path: /opt/nomad/
+    state: directory
+    mode: '0755'
+    
+- name: Template for Nomad configuration
+  template:
+    src: nomad.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+
+- name: Start Nomad
+  service:
+    name: nomad
+    state: restarted
+    enabled: yes

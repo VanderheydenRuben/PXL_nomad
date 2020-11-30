@@ -10,3 +10,15 @@
   package:
     name: docker-ce
     state: latest
+
+- name: Start Docker
+  service:
+    name: docker
+    state: started
+    enabled: yes
+
+- name: Add Vagrant user to docker group for managing docker without sudo
+  user:
+    name: vagrant
+    groups: docker
+    append: yes

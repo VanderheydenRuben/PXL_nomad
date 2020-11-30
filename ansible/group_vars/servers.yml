@@ -1,2 +1,6 @@
-crond__content: 'servers_value'
-consul__server: true
+---
+consul_master: "yes"
+consul_join: "no"
+consul_server: "yes"
+nomad_master: "yes"
+nomad_server: "yes"

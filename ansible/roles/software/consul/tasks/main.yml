@@ -10,3 +10,14 @@
   package:
     name: consul
     state: latest
+    
+- name: Template for Consul configuration
+  template:
+    src: consul.hcl.j2
+    dest: /etc/consul.d/consul.hcl
+
+- name: Start Consul
+  service:
+    name: consul
+    state: restarted
+    enabled: yes

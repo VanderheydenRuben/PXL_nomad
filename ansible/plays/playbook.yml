@@ -1,0 +1,15 @@
+---
+- name: Plays server vm
+  hosts: servers
+  become: yes
+  roles:
+    - software/consul
+    - software/nomad
+
+- name: Plays client vm
+  hosts: clients
+  become: yes
+  roles:
+    - software/docker
+    - software/consul
+    - software/nomad

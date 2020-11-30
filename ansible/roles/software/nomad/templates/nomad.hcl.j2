@@ -1,0 +1,25 @@
+#!/bin/bash
+# {{ ansible_managed }}
+# {{ ansible_default_ipv4.address }}
+# {{ ansible_eth1.ipv4.address }}
+
+datacenter = "dc1",
+data_dir = "/opt/nomad/{{ inventory_hostname }}",
+bind_addr = "{{ ansible_eth1.ipv4.address }}",
+ui = true,
+
+{% if nomad_server == "yes" %}
+server {
+    enabled = true,
+{% if nomad_master == "yes" %}
+    bootstrap_expect = {{ groups['servers'] | length }},
+{% endif %}
+
+}
+{% else %}
+client {
+    enabled = true,
+    servers = [ "192.168.1.1" ],
+    network_interface = "eth1",
+}
+{% endif %}

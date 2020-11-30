@@ -18,17 +18,14 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 	
 	client.vm.provision "ansible_local" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
-      ansible.playbook = "ansible/plays/client.yml"
+      ansible.playbook = "ansible/plays/playbook.yml"
       ansible.groups = {
         "clients" => ["Nomad-Client-#{i}"],
-#        "clients:vars" => {"crond__content" => "client_value"}
-      }
-      ansible.host_vars = {
-#        "client" => {"crond__content" => "client_value"}
+        "clients:vars" => {"consul_master" => "no", "consul_join" => "yes", "consul_server"=> "no", "nomad_master" => "no", "nomad_server" => "no"}
       }
 #      ansible.verbose = '-vvv'
     end
-	client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
+#	client.vm.provision "shell", path: "scripts/nomad-client#{i}.sh"
   end
 end
 
@@ -39,17 +36,14 @@ end
 	
 	server.vm.provision "ansible_local" do |ansible|
       ansible.config_file = "ansible/ansible.cfg"
-      ansible.playbook = "ansible/plays/server.yml"
+      ansible.playbook = "ansible/plays/playbook.yml"
       ansible.groups = {
         "servers" => ["server"],
-#        "servers:vars" => {"crond__content" => "servers_value"}
-      }
-      ansible.host_vars = {
-#        "server" => {"crond__content" => "server_value"}
+        "servers:vars" => {"consul_master" => "yes", "consul_join" => "no", "consul_server"=> "yes", "nomad_master" => "yes", "nomad_server" => "yes"}
       }
 #      ansible.verbose = '-vvv'
     end
-	server.vm.provision "shell", path: "scripts/nomad-Server.sh"
+#	server.vm.provision "shell", path: "scripts/nomad-Server.sh"
   end
 
 
