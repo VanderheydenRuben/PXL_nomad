@@ -6,7 +6,6 @@
 datacenter = "dc1",
 data_dir = "/opt/nomad/{{ inventory_hostname }}",
 bind_addr = "{{ ansible_eth1.ipv4.address }}",
-ui = true,
 
 {% if nomad_server == "yes" %}
 server {

@@ -27,3 +27,4 @@
     name: nomad
     state: restarted
     enabled: yes
+  become: yes
