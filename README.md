@@ -346,3 +346,431 @@ client {
 {% endif %}
 
 ```
+
+# Opdracht 3
+
+In de map /ansible/roles/software/nomad/tasks hebben we een main.yml file waarmee we nomad installeren en zorgen dat deze service draait, een grafana job, een alertmanager job en een prometheus job starten.
+```bash
+---
+- name: Add RHEL repository
+  yum_repository:
+    name: hashicorp
+    description: hashicorp repository
+    baseurl: https://rpm.releases.hashicorp.com/RHEL/$releasever/$basearch/stable
+    gpgkey: https://rpm.releases.hashicorp.com/gpg
+
+- name: Install Nomad
+  package:
+    name: nomad
+    state: latest
+    
+- name: Create Nomad directory
+  file:
+    path: /opt/nomad/
+    state: directory
+    mode: '0755'
+    
+- name: Template for Nomad configuration
+  template:
+    src: nomad.hcl.j2
+    dest: /etc/nomad.d/nomad.hcl
+
+- name: Start Nomad
+  service:
+    name: nomad
+    state: restarted
+    enabled: yes
+  become: yes
+  
+- name: Copy Grafana job
+  copy:
+    src: templates/grafana.hcl.j2
+    dest: /home/grafana.hcl
+    owner: root
+    mode: 0644
+  when: "'servers' in group_names"
+
+- name: Copy Alertmanager job
+  copy:
+    src: templates/alertmanager.hcl.j2
+    dest: /home/alertmanager.hcl
+    owner: root
+    mode: 0644
+  when: "'servers' in group_names"
+
+- name: Copy Prometheus job
+  copy:
+    src: templates/prometheus.hcl.j2
+    dest: /home/prometheus.hcl
+    owner: root
+    mode: 0644
+  when: "'servers' in group_names"
+```
+
+In de templates folder onder de nomad folder hebben we een aantal templates om de gebruikte services te configureren: alertmanager, grafana, httpd-nomad, node-explorer, nomad en prometheus.
+alertmanager:
+```bash
+job "alertmanager" {
+  datacenters = ["dc1"]
+  type = "service"
+
+  group "alerting" {
+    count = 1
+    restart {
+      attempts = 2
+      interval = "30m"
+      delay = "15s"
+      mode = "fail"
+    }
+    ephemeral_disk {
+      size = 300
+    }
+
+    task "alertmanager" {
+      driver = "docker"
+      config {
+        image = "prom/alertmanager:latest"
+        port_map {
+          alertmanager_ui = 9093
+        }
+      }
+      resources {
+        network {
+          mbits = 10
+          port "alertmanager_ui" {}
+        }
+      }
+      service {
+        name = "alertmanager"
+        tags = ["urlprefix-/alertmanager strip=/alertmanager"]
+        port = "alertmanager_ui"
+        check {
+          name     = "alertmanager_ui port alive"
+          type     = "http"
+          path     = "/-/healthy"
+          interval = "10s"
+          timeout  = "2s"
+        }
+      }
+    }
+  }
+}
+```
+
+grafana:
+```bash
+job "grafana" {
+  datacenters = ["dc1"]
+  type = "service"
+
+  group "grafana" {
+    count = 1
+    network {
+      port "grafana_ui" {
+            to=3000
+				static = "3000"
+      }
+    }
+    task "grafana" {
+      driver = "docker"
+      config {
+        image = "grafana/grafana:latest"
+        ports = ["grafana_ui"]
+        logging {
+          type = "journald"
+          config {
+            tag = "grafana"
+          }
+        }
+      }
+      resources {
+        memory = 100
+      }
+      service {
+        name = "grafana"
+        
+      }
+    }
+  }
+}
+```
+
+httpd-nomad:
+```bash
+job "httpd" {
+  datacenters = ["dc1"]
+  type = "service"
+
+  group "httpd" {
+    count = 1
+    
+
+    task "httpd" {
+      driver = "docker"
+	  
+      config {
+        image = "httpd"
+		force_pull = true
+        port_map {
+          http = 80
+        }
+		logging {
+			type = "journald"
+			config {
+				tag = "httpd"
+				}
+			}
+      }
+
+      resources {
+        network {
+          port "http" {
+			static = 80
+		  }
+        }
+      }
+
+      service {
+        name = "httpd"
+        tags = ["httpd"]
+        port = "http"
+      }
+    }
+  }
+}
+```
+
+node-explorer:
+```bash
+job "node-exporter" {
+  region = "global"
+  datacenters = ["dc1"]
+  type = "service"
+
+  group "app" {
+    count = 2
+
+    restart {
+      attempts = 3
+      delay    = "20s"
+      mode     = "delay"
+    }
+
+    task "node-exporter" {
+      driver = "docker"
+      
+      config {
+        image = "prom/node-exporter:latest"
+        force_pull = true
+        volumes = [
+          "/proc:/host/proc",
+          "/sys:/host/sys",
+          "/:/rootfs"
+        ]
+        port_map {
+          http = 9100
+        }
+        logging {
+          type = "journald"
+          config {
+            tag = "NODE-EXPORTER"
+          }
+        }
+
+      }
+
+      service {
+        name = "node-exporter"
+        address_mode = "driver"
+        tags = [
+          "metrics"
+        ]
+        port = "http"
+
+
+        check {
+          type = "http"
+          path = "/metrics/"
+          interval = "10s"
+          timeout = "2s"
+        }
+      }
+
+      resources {
+        cpu    = 50
+        memory = 100
+
+        network {
+          port "http" { static = "9100" }
+        }
+      }
+    }
+  }
+}
+```
+
+nomad:
+```bash
+#!/bin/bash
+# {{ ansible_managed }}
+# {{ ansible_default_ipv4.address }}
+# {{ ansible_eth1.ipv4.address }}
+
+datacenter = "dc1",
+data_dir = "/opt/nomad/{{ inventory_hostname }}",
+bind_addr = "{{ ansible_eth1.ipv4.address }}",
+
+{% if nomad_server == "yes" %}
+server {
+    enabled = true,
+{% if nomad_master == "yes" %}
+    bootstrap_expect = {{ groups['servers'] | length }},
+{% endif %}
+
+}
+{% else %}
+client {
+    enabled = true,
+    servers = [ "192.168.1.1" ],
+    network_interface = "eth1",
+}
+
+{% endif %}
+
+telemetry {
+  collection_interval = "1s"
+  disable_hostname = true
+  prometheus_metrics = true
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}
+plugin "docker" {
+  config {
+    volumes {
+      enabled = true
+    }
+  }
+}
+```
+
+prometheus:
+```bash
+job "prometheus" {
+  datacenters = ["dc1"]
+  type = "service"
+
+  group "monitoring" {
+    count = 1
+    restart {
+      attempts = 2
+      interval = "30m"
+      delay = "15s"
+      mode = "fail"
+    }
+    ephemeral_disk {
+      size = 300
+    }
+
+    task "prometheus" {
+      template {
+        change_mode = "noop"
+        destination = "local/apache_alert.yml"
+        data = <<EOH
+---
+groups:
+- name: prometheus_alerts
+  rules:
+  - alert: Apache down
+    expr: absent(up{job="httpd"})
+    for: 10s
+    labels:
+      severity: critical
+    annotations:
+      description: "Apache is down."
+EOH
+      }
+
+      template {
+        change_mode = "noop"
+        destination = "local/prometheus.yml"
+        data = <<EOH
+---
+global:
+  scrape_interval:     5s
+  evaluation_interval: 5s
+
+alerting:
+  alertmanagers:
+  - consul_sd_configs:
+    - server: 192.168.1.1:8500
+      services: ['alertmanager']
+
+rule_files:
+  - "apache_alert.yml"
+
+scrape_configs:
+
+  - job_name: 'alertmanager'
+
+    consul_sd_configs:
+    - server: 192.168.1.1:8500
+      services: ['alertmanager']
+
+  - job_name: 'nomad_metrics'
+
+    consul_sd_configs:
+    - server: 192.168.1.1:8500
+      services: ['nomad-client', 'nomad']
+
+    relabel_configs:
+    - source_labels: ['__meta_consul_tags']
+      regex: '(.*)http(.*)'
+      action: keep
+
+    scrape_interval: 5s
+    metrics_path: /v1/metrics
+    params:
+      format: ['prometheus']
+
+  - job_name: 'httpd'
+
+    consul_sd_configs:
+    - server: 192.168.1.1:8500
+      services: ['httpd']
+
+    metrics_path: /metrics
+EOH
+      }
+      driver = "docker"
+      config {
+        image = "prom/prometheus:latest"
+        volumes = [
+          "local/apache_alert.yml:/etc/prometheus/apache_alert.yml",
+          "local/prometheus.yml:/etc/prometheus/prometheus.yml"
+        ]
+        port_map {
+          prometheus_ui = 9090
+        }
+      }
+      resources {
+        network {
+          mbits = 10
+          port "prometheus_ui" {}
+        }
+      }
+      service {
+        name = "prometheus"
+        tags = ["urlprefix-/"]
+        port = "prometheus_ui"
+        check {
+          name     = "prometheus_ui port alive"
+          type     = "http"
+          path     = "/-/healthy"
+          interval = "10s"
+          timeout  = "2s"
+        }
+      }
+    }
+  }
+}
+```
