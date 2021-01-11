@@ -497,43 +497,40 @@ job "grafana" {
 
 httpd-nomad:
 ```bash
-job "httpd" {
+job "webserver" {
   datacenters = ["dc1"]
-  type = "service"
 
-  group "httpd" {
-    count = 1
-    
-
-    task "httpd" {
+  group "webserver" {
+    task "server" {
       driver = "docker"
-	  
       config {
-        image = "httpd"
-		force_pull = true
-        port_map {
-          http = 80
-        }
-		logging {
-			type = "journald"
-			config {
-				tag = "httpd"
-				}
-			}
+        image = "hashicorp/demo-prometheus-instrumentation:latest"
       }
 
       resources {
+        cpu = 500
+        memory = 256
         network {
-          port "http" {
-			static = 80
-		  }
+          mbits = 10
+          port  "http"{}
         }
       }
 
       service {
-        name = "httpd"
-        tags = ["httpd"]
+        name = "webserver"
         port = "http"
+
+        tags = [
+          "testweb",
+          "urlprefix-/webserver strip=/webserver",
+        ]
+
+        check {
+          type     = "http"
+          path     = "/"
+          interval = "2s"
+          timeout  = "2s"
+        }
       }
     }
   }
@@ -736,7 +733,7 @@ scrape_configs:
 
     consul_sd_configs:
     - server: 192.168.1.1:8500
-      services: ['httpd']
+      services: ['webserver']
 
     metrics_path: /metrics
 EOH
