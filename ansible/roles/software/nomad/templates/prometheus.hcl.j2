@@ -79,7 +79,7 @@ scrape_configs:
 
     consul_sd_configs:
     - server: 192.168.1.1:8500
-      services: ['webserver']
+      services: ['httpd']
 
     metrics_path: /metrics
 EOH
@@ -88,7 +88,7 @@ EOH
       config {
         image = "prom/prometheus:latest"
         volumes = [
-          "local/webserver_alert.yml:/etc/prometheus/apache_alert.yml",
+          "local/apache_alert.yml:/etc/prometheus/apache_alert.yml",
           "local/prometheus.yml:/etc/prometheus/prometheus.yml"
         ]
         port_map {
