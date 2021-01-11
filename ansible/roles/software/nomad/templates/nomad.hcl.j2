@@ -21,4 +21,20 @@ client {
     servers = [ "192.168.1.1" ],
     network_interface = "eth1",
 }
+
 {% endif %}
+
+telemetry {
+  collection_interval = "1s"
+  disable_hostname = true
+  prometheus_metrics = true
+  publish_allocation_metrics = true
+  publish_node_metrics = true
+}
+plugin "docker" {
+  config {
+    volumes {
+      enabled = true
+    }
+  }
+}

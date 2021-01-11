@@ -28,3 +28,42 @@
     state: restarted
     enabled: yes
   become: yes
+  
+- name: Copy Grafana job
+  copy:
+    src: templates/grafana.hcl.j2
+    dest: /home/grafana.hcl
+    owner: root
+    mode: 0644
+  when: "'servers' in group_names"
+
+- name: Copy Alertmanager job
+  copy:
+    src: templates/alertmanager.hcl.j2
+    dest: /home/alertmanager.hcl
+    owner: root
+    mode: 0644
+  when: "'servers' in group_names"
+
+- name: Copy Prometheus job
+  copy:
+    src: templates/prometheus.hcl.j2
+    dest: /home/prometheus.hcl
+    owner: root
+    mode: 0644
+  when: "'servers' in group_names"
+
+#- name: start nomad jobs
+ # shell: |-
+#   nomad job run -address=192.168.1.1 /home/prometheus.hcl 
+ # when: "'servers' in group_names"
+
+#- name: start nomad jobs
+#  shell: |-
+#    nomad job run -address=192.168.1.1 /home/grafana.hcl 
+ # when: "'servers' in group_names"
+
+#- name: start nomad jobs
+#  shell: |-
+#    nomad job run -address=192.168.1.1 /home/alertmanager.hcl
+ # when: "'servers' in group_names"
