@@ -12,7 +12,22 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 #	end
 #  end
 
-
+	config.vm.define :server do |server| 
+	server.vm.hostname = "Nomad-Server"
+	server.vm.network "private_network", ip:"192.168.1.1", virtualbox__intnet:"mynetwork"
+	server.vm.network "forwarded_port", guest: 4646, host: 4646
+	#server.vm.network "forwarded_port", guest: 8500, host: 8500
+	
+	server.vm.provision "ansible_local" do |ansible|
+      ansible.config_file = "ansible/ansible.cfg"
+      ansible.playbook = "ansible/plays/playbook.yml"
+      ansible.groups = {
+        "servers" => ["server"],
+		"servers:vars" => {"consul_master" => "yes", "consul_join" => "no", "consul_server"=> "yes", "nomad_master" => "yes", "nomad_server" => "yes"}
+      }
+    end
+  end
+  
 	(1..2).each do |i|
 	config.vm.define "Nomad-Client-#{i}"  do |client| 
 	client.vm.hostname = "Nomad-Client-#{i}"
@@ -30,21 +45,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   end
 end
 
-	config.vm.define :server do |server| 
-	server.vm.hostname = "Nomad-Server"
-	server.vm.network "private_network", ip:"192.168.1.1", virtualbox__intnet:"mynetwork"
-	server.vm.network "forwarded_port", guest: 4646, host: 4646
-	#server.vm.network "forwarded_port", guest: 8500, host: 8500
-	
-	server.vm.provision "ansible_local" do |ansible|
-      ansible.config_file = "ansible/ansible.cfg"
-      ansible.playbook = "ansible/plays/playbook.yml"
-      ansible.groups = {
-        "servers" => ["server"],
-		"servers:vars" => {"consul_master" => "yes", "consul_join" => "no", "consul_server"=> "yes", "nomad_master" => "yes", "nomad_server" => "yes"}
-      }
-    end
-  end
+
   
   config.vm.provider :virtualbox do |virtualbox, override|
     virtualbox.customize ["modifyvm", :id, "--memory", 2048]

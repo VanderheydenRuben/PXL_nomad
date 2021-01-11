@@ -17,19 +17,19 @@ job "prometheus" {
     task "prometheus" {
       template {
         change_mode = "noop"
-        destination = "local/webserver_alert.yml"
+        destination = "local/apache_alert.yml"
         data = <<EOH
 ---
 groups:
 - name: prometheus_alerts
   rules:
-  - alert: Webserver down
-    expr: absent(up{job="webserver"})
+  - alert: Apache down
+    expr: absent(up{job="httpd"})
     for: 10s
     labels:
       severity: critical
     annotations:
-      description: "Our webserver is down."
+      description: "Apache is down."
 EOH
       }
 
@@ -49,7 +49,7 @@ alerting:
       services: ['alertmanager']
 
 rule_files:
-  - "webserver_alert.yml"
+  - "apache_alert.yml"
 
 scrape_configs:
 
@@ -75,7 +75,7 @@ scrape_configs:
     params:
       format: ['prometheus']
 
-  - job_name: 'webserver'
+  - job_name: 'httpd'
 
     consul_sd_configs:
     - server: 192.168.1.1:8500
@@ -88,7 +88,7 @@ EOH
       config {
         image = "prom/prometheus:latest"
         volumes = [
-          "local/webserver_alert.yml:/etc/prometheus/webserver_alert.yml",
+          "local/webserver_alert.yml:/etc/prometheus/apache_alert.yml",
           "local/prometheus.yml:/etc/prometheus/prometheus.yml"
         ]
         port_map {

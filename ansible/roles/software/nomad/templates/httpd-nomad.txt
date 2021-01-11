@@ -1,8 +1,8 @@
-job "webserver" {
+job "httpd" {
   datacenters = ["dc1"]
   type = "service"
 
-  group "webserver" {
+  group "httpd" {
     count = 1
     
 
@@ -18,7 +18,7 @@ job "webserver" {
 		logging {
 			type = "journald"
 			config {
-				tag = "WEBSERVER"
+				tag = "httpd"
 				}
 			}
       }
@@ -32,8 +32,8 @@ job "webserver" {
       }
 
       service {
-        name = "webserver"
-        tags = ["webserver"]
+        name = "httpd"
+        tags = ["httpd"]
         port = "http"
       }
     }
